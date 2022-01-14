@@ -1,62 +1,61 @@
 const categoriaSchema = require("../models/Categoria");
-const ErrorResponse = require('../utils/errorResponse');
+const ErrorResponse = require("../utils/errorResponse");
+const asyncHandler = require('../midlewares/async');
 
-exports.getCategorias = async (req, res, next) => {
-  try {
+exports.getCategorias = asyncHandler(async (req, res, next) => {
     const categoria = await categoriaSchema.find();
     res.status(200).json({ data: categoria });
-  } catch (err) {
-    next(new ErrorResponse(`Categoria no existentes}`, 404));
-  }
-};
+});
 
-exports.createCategoria = async (req, res, next) => {
-  try {
+exports.createCategoria = asyncHandler(async (req, res, next) => {
     const categoria = await categoriaSchema.create(req.body);
     res.status(201).json({
       "created succesfully": categoria,
     });
-  } catch (err) {
-    next(err)
-  }
-};
+});
 
-exports.updateCategoria = async (req, res, next) => {
-  try {
+exports.updateCategoria = asyncHandler( async (req, res, next) => {
     const categoria = await categoriaSchema.findOneAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     );
-    if(!categoria){
-      res.status(404).json({success : false})
+    if (!categoria) {
+      return next(
+        new ErrorResponse(
+          `Categoria no encontrada con el id ${req.params.id}`,
+          404
+        )
+      );
     }
     res.status(200).json({ data: categoria });
-  } catch (err) {
-    next(err)
-  }
-};
+});
 
-exports.deleteCategoria = async (req, res, next) => {
-  try {
+exports.deleteCategoria = asyncHandler(async (req, res, next) => {
     const categoria = await categoriaSchema.findByIdAndRemove(req.params.id);
+    if (!categoria) {
+      return next(
+        new ErrorResponse(
+          `Categoria no encontrada con el id ${req.params.id}`,
+          404
+        )
+      );
+    }
     res.status(200).json({ message: `ID : ${req.params.id} deleted ` });
-  } catch (err) {
-    next(err)
-  }
-};
+});
 
-exports.getCategoria = async (req, res, next) => {
-  try {
+exports.getCategoria = asyncHandler(async (req, res, next) => {
     const categoria = await categoriaSchema.findById(req.params.id);
     if (!categoria) {
-      return res.status(404).json({ success: false });
+      return next(
+        new ErrorResponse(
+          `Categoria no encontrada con el id ${req.params.id}`,
+          404
+        )
+      );
     }
     res.status(200).json({
       success: true,
       data: categoria,
     });
-  } catch (err) {
-    next(new ErrorResponse(`No se encontro categoria con el id ${req.params.id}`, 404));
-  }
-};
+});
